@@ -47,7 +47,29 @@ local function render_file(comp, show_path, depth)
 end
 
 ---@param comp RenderComponent
+local function get_impact(comp)
+  if not comp then
+    return 0
+  end
+  if not comp.context then
+    return 0
+  end
+  local stats = comp.context.stats
+  if not stats then
+    return 0
+  end
+
+  local additions = stats.additions or 0
+  local deletions = stats.deletions or 0
+  return additions + deletions
+end
+
+---@param comp RenderComponent
 local function render_file_list(comp)
+  -- in list mode display most impacted files first (no. additions and deletions)
+  table.sort(comp.components, function(a, b)
+    return get_impact(a) > get_impact(b)
+  end)
   for _, file_comp in ipairs(comp.components) do
     render_file(file_comp, true)
   end
